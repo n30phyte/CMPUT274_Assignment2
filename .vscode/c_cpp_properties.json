@@ -1,12 +1,24 @@
 {
     "configurations": [
         {
+            "name": "Test",
+            "includePath": [
+            ],
+            "compilerPath": "/usr/bin/g++",
+            "intelliSenseMode": "gcc-x64",
+            "cppStandard": "c++11",
+            "compilerArgs": [
+                "-std=c++11",
+                "-Wall"
+            ]
+        },
+        {
             "name": "Arduino",
             "compilerPath": "/usr/bin/avr-g++",
             "intelliSenseMode": "gcc-x86",
-            "cppStandard": "c++98",
+            "cppStandard": "c++11",
             "compilerArgs": [
-                "-std=gnu++98",
+                "-std=gnu++11",
                 "-mmcu=atmega2560"
             ],
             "includePath": [
