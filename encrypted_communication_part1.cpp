@@ -12,6 +12,7 @@ uint32_t d;
 uint32_t n;
 uint32_t e;
 uint32_t m;
+
 bool isServer = false;
 
 constexpr uint32_t mulmod(uint32_t value1, uint32_t value2, uint32_t modulus)
@@ -57,6 +58,7 @@ void send(char message)
 
 void setup()
 {
+    init();
 
     if (isServer) {
 
