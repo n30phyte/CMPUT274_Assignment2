@@ -2,12 +2,14 @@
 
 uint32_t mulmod(uint32_t value1, uint32_t value2, uint32_t modulus)
 {
-    uint32_t answer = 0;
-    for (auto i = 0; i < 31; i++) {
-        answer += ((((value1 >> i) & 0b1) * value2) << i) % modulus;
-    }
-    answer %= modulus;
-    return answer;
+    // uint32_t answer = 0;
+    // for (auto i = 0; i < 31; i++) {
+    //     answer += ((((value1 >> i) & 0b1) * value2) << i) % modulus;
+    // }
+    // answer %= modulus;
+    // return answer;
+
+    return (value1 * value2) % modulus;
 }
 
 uint32_t powmod(uint32_t base, uint32_t exponent, uint32_t modulus)
@@ -26,12 +28,12 @@ uint32_t powmod(uint32_t base, uint32_t exponent, uint32_t modulus)
     return answer;
 }
 
-uint32_t encryptChar(char decrypted)
+uint32_t encryptChar(char decrypted, uint32_t otherPubKey, uint32_t otherModulus)
 {
-    return 0;
+    return powmod(decrypted, otherPubKey, otherModulus);
 }
 
-char decryptChar(uint32_t encrypted)
+char decryptChar(uint32_t encrypted, uint32_t thisPrivKey, uint32_t thisModulus)
 {
-    return 'A';
+    return powmod(encrypted, thisPrivKey, thisModulus);
 }
