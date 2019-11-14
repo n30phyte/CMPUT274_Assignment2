@@ -57,13 +57,14 @@ int main()
         if (isServer) {
             // Server side
             if (Serial3.available() > 0) {
+                Serial.print("This is server");
                 Serial.print(receive(SERVER_PRIVATE_KEY, SERVER_MODULUS));
             }
 
         } else {
             // Client side
             if (Serial.available() > 0) {
-
+                Serial.print("This is client");
                 char input = Serial.read();
                 Serial.print(input);
                 Serial.flush();
