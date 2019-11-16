@@ -16,6 +16,7 @@ bool isServer = false;
 
 // Communication Code start
 
+// Store the read bytes in buffer, directly get uint32_t in message.
 union Converter {
     uint32_t message = 0;
     char buffer[4];
@@ -50,6 +51,7 @@ void setup()
 
     pinMode(ID_PIN, INPUT_PULLUP);
 
+    // INPUT_PULLUP defines 5V in as LOW and no voltage as HIGH, so flip the reading.
     isServer = !digitalRead(ID_PIN);
 }
 

@@ -7,12 +7,15 @@ uint32_t mulmod(uint32_t value1, uint32_t value2, uint32_t modulus)
     value2 %= modulus;
 
     while (value1 > 0) {
+        // check if a_i is 1
         if (value1 & 0b1) {
             answer = (answer + value2) % modulus;
         }
 
-        value2 <<= 1;
-        value2 %= modulus;
+        // Multiply b by 2^1
+        value2 = (value2 << 1) % modulus;
+
+        // Divide a by 2
         value1 >>= 1;
     }
 
