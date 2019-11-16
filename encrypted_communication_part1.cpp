@@ -12,54 +12,55 @@ const uint32_t CLIENT_MODULUS = 84823;
 
 const int ID_PIN = 13;
 
-bool isServer = false;
-
-// Communication Code start
-
-// Store the read bytes in buffer, directly get uint32_t in message.
+/**
+ *  Store the read bytes in buffer, directly get uint32_t in message.
+ */
 union Converter {
     uint32_t message = 0;
     char buffer[4];
 };
 
-/*
-    Description: Receives an encrypted message, decrypts it, and returns the
-        decrypted character.
+struct ArduinoConstants {
+    bool isServer;
+    uint32_t thisPrivateKey;
+    uint32_t thisModulus;
+    uint32_t otherPublicKey;
+    uint32_t otherModulus;
+};
 
-    Arguments: 
-        * thisPrivKey (uint32_t): is either the server or client key, depending
-        on which arduino is receiving.
-        * thisModulus (uint32_t): is either the server or client modulus,
-        depending on which arduino is receiving.
-    
-    Returns:
-        * decrypted (char): the result of decrypting the received message.
-*/
-char receive(uint32_t thisPrivKey, uint32_t thisModulus)
+/**
+ * Receives an encrypted message, and returns the decrypted character.
+ * 
+ * Reads 4 bytes from the Serial3 stream, storing it in union that allows a
+ * char[4] to be accessed as a uint32_t.
+ * 
+ * The provided uint32_from_serial3() function did not seem to work, and this
+ * was our solution.
+ * 
+ * @param &properties A reference to the "constants" of this Arduino
+ * @return The decrypted character.
+ */
+char receive(const ArduinoConstants& constants)
 {
     Converter conv;
 
-    // Write 4 bytes to the `Converter' union.
+    // Read 4 bytes into the `Converter' union.
     Serial3.readBytes(conv.buffer, 4);
 
-    char decrypted = powmod(conv.message, thisPrivKey, thisModulus);
+    char decrypted = powmod(conv.message, constants.thisPrivateKey, constants.thisModulus);
 
     return decrypted;
 };
 
-/*
-    Description: Encrypts a message, then sends it as four bytes to the other
-        arduino.
-
-    Arguments: 
-        * message (char): the message to be encrypted and sent to the other 
-        arduino.
-        * otherPubKey (uint32_t): the public key of the other arduino.
-        * otherModulus (uint32_t): the modulus of the other arduino.
-*/
-void send(char message, uint32_t otherPubKey, uint32_t otherModulus)
+/**
+ * Encrypts a message, then sends it as four bytes to the other Arduino.
+ * 
+ * @param message the message to be encrypted and sent to the other Arduino
+ * @param &properties A reference to the "constants" of this Arduino.
+ */
+void send(char message, const ArduinoConstants& constants)
 {
-    uint32_t encrypted = powmod(message, otherPubKey, otherModulus);
+    uint32_t encrypted = powmod(message, constants.otherPublicKey, constants.otherModulus);
 
     Serial3.write((char)(encrypted >> 0));
     Serial3.write((char)(encrypted >> 8));
@@ -67,12 +68,56 @@ void send(char message, uint32_t otherPubKey, uint32_t otherModulus)
     Serial3.write((char)(encrypted >> 24));
 }
 
-// Communication Code End
+/**
+ * Client processing loop.
+ * 
+ * Wait for input from the user. If there is a message, the Arduino will send the
+ * message to the other Arduino once it has been encrypted in the 'send' function.
+ * 
+ * @param &properties A reference to the "constants" of this Arduino.
+ */
+void clientLoop(const ArduinoConstants& constants)
+{
+    if (Serial.available() > 0) {
+        char input = Serial.read();
+        Serial.flush();
 
-/*
-    Description: Setup function. Initializes Serial and Serial3, which are 
-        needed for communication between the two arduinos.
-*/
+        if (input == '\r') {
+            send('\r', constants);
+            send('\n', constants);
+            Serial.println();
+        } else {
+            Serial.print(input);
+            send(input, constants);
+        }
+
+        Serial3.flush();
+    }
+}
+
+/**
+ * Server processing loop.
+ * 
+ * Wait for a message from the other Arduino. As soon as a new message is available,
+ * it will print the message after it is decrypted in the 'receive' function.
+ * 
+ * @param &properties A reference to the "constants" of this Arduino.
+ */
+void serverLoop(const ArduinoConstants& constants)
+{
+    if (Serial3.available() > 0) {
+        Serial.print(receive(constants));
+    }
+}
+
+/**
+ * Setup function.
+ * 
+ * Initializes Serial for communication to the computer
+ * and Serial3, which is used for communication between the two arduinos.
+ * Calls Arduino initialization code (init())
+ * Sets up pins to be on input mode for the server determination pin.
+ */
 void setup()
 {
     init();
@@ -80,53 +125,43 @@ void setup()
     Serial3.begin(9600);
 
     pinMode(ID_PIN, INPUT_PULLUP);
-
-    // INPUT_PULLUP defines 5V in as LOW and no voltage as HIGH, so flip the reading.
-    isServer = !digitalRead(ID_PIN);
 }
 
-/*
-    Description: Each arduino is continiously running the while loop. 
-
-    If the arduino is acting as the server, it will listen for a message from
-    the other arduino. If it detects a message, it will print the message after
-    it is decrypted in the `receive' function.
-
-    If the arduino is acting as the client, it will listen for input from the
-    user. If a message is inputted, the arduino will send the message to the
-    other arduino once it has been encrypted in the `send' function.
-*/
+/**
+ * Main function of program..
+ */
 int main()
 {
 
     setup();
-    Serial.println("Ready for input.");
 
-    while (true) {
-        if (isServer) {
-            // Server side
-            if (Serial3.available() > 0) {
-                Serial.print(receive(SERVER_PRIVATE_KEY, SERVER_MODULUS));
-            }
+    // Stores private keys, public keys and moduli.
+    ArduinoConstants consts;
 
-        } else {
-            // Client side
-            if (Serial.available() > 0) {
-                char input = Serial.read();
-                Serial.flush();
+    // INPUT_PULLUP defines 5V in as LOW and no voltage as HIGH, so invert the reading.
+    consts.isServer = !digitalRead(ID_PIN);
 
-                if (input == '\r') {
-                    Serial.println();
-                    send('\r', SERVER_PUBLIC_KEY, SERVER_MODULUS);
-                    send('\n', SERVER_PUBLIC_KEY, SERVER_MODULUS);
-                } else {
-                    Serial.print(input);
-                    send(input, SERVER_PUBLIC_KEY, SERVER_MODULUS);
-                }
+    if (consts.isServer) {
+        // Setup private keys, public keys and moduli.
+        consts.otherModulus = CLIENT_MODULUS;
+        consts.otherPublicKey = CLIENT_PUBLIC_KEY;
+        consts.thisModulus = SERVER_MODULUS;
+        consts.thisPrivateKey = SERVER_PRIVATE_KEY;
 
-                Serial3.flush();
-            }
+        while (true) {
+            serverLoop(consts);
+        }
+    } else {
+        // Setup private keys, public keys and moduli.
+        consts.otherModulus = SERVER_MODULUS;
+        consts.otherPublicKey = SERVER_PUBLIC_KEY;
+        consts.thisModulus = CLIENT_MODULUS;
+        consts.thisPrivateKey = CLIENT_PRIVATE_KEY;
+
+        while (true) {
+            clientLoop(consts);
         }
     }
+
     return 0;
 }
