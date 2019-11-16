@@ -22,15 +22,41 @@ union Converter {
     char buffer[4];
 };
 
+/*
+    Description: Receives an encrypted message, decrypts it, and returns the
+        decrypted character.
+
+    Arguments: 
+        * thisPrivKey (uint32_t): is either the server or client key, depending
+        on which arduino is receiving.
+        * thisModulus (uint32_t): is either the server or client modulus,
+        depending on which arduino is receiving.
+    
+    Returns:
+        * decrypted (char): the result of decrypting the received message.
+*/
 char receive(uint32_t thisPrivKey, uint32_t thisModulus)
 {
     Converter conv;
 
+    // Write 4 bytes to the `Converter' union.
     Serial3.readBytes(conv.buffer, 4);
 
-    return powmod(conv.message, thisPrivKey, thisModulus);
+    char decrypted = powmod(conv.message, thisPrivKey, thisModulus);
+
+    return decrypted;
 };
 
+/*
+    Description: Encrypts a message, then sends it as four bytes to the other
+        arduino.
+
+    Arguments: 
+        * message (char): the message to be encrypted and sent to the other 
+        arduino.
+        * otherPubKey (uint32_t): the public key of the other arduino.
+        * otherModulus (uint32_t): the modulus of the other arduino.
+*/
 void send(char message, uint32_t otherPubKey, uint32_t otherModulus)
 {
     uint32_t encrypted = powmod(message, otherPubKey, otherModulus);
@@ -43,6 +69,10 @@ void send(char message, uint32_t otherPubKey, uint32_t otherModulus)
 
 // Communication Code End
 
+/*
+    Description: Setup function. Initializes Serial and Serial3, which are 
+        needed for communication between the two arduinos.
+*/
 void setup()
 {
     init();
@@ -55,6 +85,17 @@ void setup()
     isServer = !digitalRead(ID_PIN);
 }
 
+/*
+    Description: Each arduino is continiously running the while loop. 
+
+    If the arduino is acting as the server, it will listen for a message from
+    the other arduino. If it detects a message, it will print the message after
+    it is decrypted in the `receive' function.
+
+    If the arduino is acting as the client, it will listen for input from the
+    user. If a message is inputted, the arduino will send the message to the
+    other arduino once it has been encrypted in the `send' function.
+*/
 int main()
 {
 
