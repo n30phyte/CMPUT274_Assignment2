@@ -1,0 +1,37 @@
+//==//--//==//--//==//--//==//--//==//--//==//--//==//--//==//--//==//--//==//
+//    
+//      Student 1:          Benjamin Kong -- 1573684
+//      Student 2:          Michael Kwok  -- 1548454
+//
+//      CMPUT 274:          Fall 2019
+//
+//      Assignment 2:       Encrypted Communication
+//
+//--//==//--//==//--//==//--//==//--//==//--//==//--//==//--//==//--//==//--//
+
+
+Included Files:
+	* encrypted_communication_part1.cpp;
+	* encryption.cpp;
+	* Makefile;
+
+
+Accessories:
+	* 2x Arduino Mega Board (AMG);
+	* 1x 560 Ohm resistor (or similar);
+
+
+Wiring Instructions:
+	* Server Arduino TX3 <--> Client Arduino RX3;
+	* Client Arduino TX3 <--> Server Arduino RX3;
+	* Client Arduino GND <--> Server Arduino GND;
+	* Server Arduino Pin 13 <--> Resistor <--> Server Arduino +5V.
+	* Client Arduino Pin 13 <--> Client Arduino GND.
+
+
+Running Instructions:
+	1. Connect both Arduinos to a PC. Use A-B style USB cables.
+	2. On the Linux VM terminal, run "arduino-port-select". Select one of them to be "Arduino 0" and the other to be "Arduino 1" by entering "1" and then "2" respectively.
+	3. With two separate terminals in the Linux VM, navigate to the directory containing the files *encrypted_communication_part1.cpp, *encryption.cpp, and *Makefile. On each terminal, run "make upload-0 && serial-mon-0" on one and "make upload-1 && serial-mon-1" on the other.
+	4. Once prompted for input on the client arduino, you can press characters and they will be sent to the server arduino and displayed on the serial monitor. The transmitted character is encrypted, then decrypted.
+
