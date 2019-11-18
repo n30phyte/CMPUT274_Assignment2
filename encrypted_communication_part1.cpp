@@ -1,14 +1,12 @@
-//==//--//==//--//==//--//==//--//==//--//==//--//==//--//==//--//==//--//==//
-//    
-//      Student 1:          Benjamin Kong -- 1573684
-//      Student 2:          Michael Kwok  -- 1548454
-//
-//      CMPUT 274:          Fall 2019
-//
-//      Assignment 2:       Encrypted Communication
-//
-//--//==//--//==//--//==//--//==//--//==//--//==//--//==//--//==//--//==//--//
-
+/******************************************************************************
+ *
+ *      Student 1:          Benjamin Kong -- 1573684
+ *      Student 2:          Michael Kwok  -- 1548454
+ *      CMPUT 274:          Fall 2019
+ *
+ *      Assignment 2:       Encrypted Communication
+ *
+ *****************************************************************************/
 #include <Arduino.h>
 
 #include "encryption.h"
@@ -24,19 +22,21 @@ const uint32_t CLIENT_MODULUS = 84823;
 const int ID_PIN = 13;
 
 /**
- *  Store the read bytes in buffer, directly get uint32_t in message.
+ * Store the read bytes in buffer, directly get uint32_t in message.
  */
 union Converter {
     uint32_t message = 0;
     char buffer[4];
 };
 
+/**
+ * Stores private keys, public keys and moduli.
+ */
 struct ArduinoConstants {
-    bool isServer;
-    uint32_t thisPrivateKey;
-    uint32_t thisModulus;
-    uint32_t otherPublicKey;
-    uint32_t otherModulus;
+    const uint32_t thisPrivateKey;
+    const uint32_t thisModulus;
+    const uint32_t otherPublicKey;
+    const uint32_t otherModulus;
 };
 
 /**
@@ -146,28 +146,29 @@ int main()
 
     setup();
 
-    // Stores private keys, public keys and moduli.
-    ArduinoConstants consts;
-
     // INPUT_PULLUP defines 5V in as LOW and no voltage as HIGH, so invert the reading.
-    consts.isServer = !digitalRead(ID_PIN);
+    bool serverPin = !digitalRead(ID_PIN);
 
-    if (consts.isServer) {
+    if (serverPin) {
         // Setup private keys, public keys and moduli.
-        consts.otherModulus = CLIENT_MODULUS;
-        consts.otherPublicKey = CLIENT_PUBLIC_KEY;
-        consts.thisModulus = SERVER_MODULUS;
-        consts.thisPrivateKey = SERVER_PRIVATE_KEY;
+        ArduinoConstants consts = {
+            .thisPrivateKey = SERVER_PRIVATE_KEY,
+            .thisModulus = SERVER_MODULUS,
+            .otherPublicKey = CLIENT_PUBLIC_KEY,
+            .otherModulus = CLIENT_MODULUS
+        };
 
         while (true) {
             serverLoop(consts);
         }
     } else {
-        // Setup private keys, public keys and moduli.
-        consts.otherModulus = SERVER_MODULUS;
-        consts.otherPublicKey = SERVER_PUBLIC_KEY;
-        consts.thisModulus = CLIENT_MODULUS;
-        consts.thisPrivateKey = CLIENT_PRIVATE_KEY;
+
+        ArduinoConstants consts = {
+            .thisPrivateKey = CLIENT_PRIVATE_KEY,
+            .thisModulus = CLIENT_MODULUS,
+            .otherPublicKey = SERVER_PUBLIC_KEY,
+            .otherModulus = SERVER_MODULUS
+        };
 
         while (true) {
             clientLoop(consts);
