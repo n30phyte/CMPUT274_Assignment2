@@ -66,7 +66,8 @@ uint32_t their_powmod(uint32_t x, uint32_t pow, uint32_t m)
     return ans;
 }
 
-bool verify_powmod(uint64_t expected, uint32_t actual, uint32_t base, uint32_t power, uint32_t mod)
+bool verify_powmod(uint64_t expected, uint32_t actual, uint32_t base,
+    uint32_t power, uint32_t mod)
 {
     if (expected != actual) {
         std::cout << "FAILED CASE:" << std::endl;

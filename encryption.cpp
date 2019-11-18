@@ -1,23 +1,21 @@
 #include "encryption.h"
 
-/*
-    Description: Modular multiplication. Calculates 
-        (value1 * value2) % modulus without exceeding 32 bits at any point 
-        during computation. 
-
-    Arguments: 
-        * value1 (uint32_t): the first number to multiply.
-        * value2 (uint32_t): the second number to multiply.
-        * modulus (uint32_t): the modulus of the operation.
-    
-    Returns:
-        * answer (uint32_t): the result of modular multiplication. 
+/**
+ * 32 bit Modular Multiplication.
+ * 
+ * Calculates the modular multplication of 2 values without requiring more than
+ * 32 bits at any point during computation.
+ * 
+ * @param value1 the first number to multiply.
+ * @param value2 the second number to multiply.
+ * @param modulus the modulus of the operation.
+ * @return the result of modular multiplication. 
 */
 uint32_t mulmod(uint32_t value1, uint32_t value2, uint32_t modulus)
 {
     uint32_t answer = 0;
 
-    // Take the modulus of `value2' to prevent overflow. This is justified 
+    // Take the modulus of `value2' to prevent overflow. This is justified
     // through modulus rules.
     value2 %= modulus;
 
@@ -33,7 +31,6 @@ uint32_t mulmod(uint32_t value1, uint32_t value2, uint32_t modulus)
 
         // Divide 'value1' by two by bit shift
         value1 >>= 1;
-        
     }
 
     // The last step is to take the modulus of the answer.
@@ -42,17 +39,15 @@ uint32_t mulmod(uint32_t value1, uint32_t value2, uint32_t modulus)
     return answer;
 }
 
-/*
-    Description: Fast exponentiation. Calculates (base^exponent) % modulus.
-        Procedure is described in the class notes.
-
-    Arguments: 
-        * base (uint32_t): the base of exponentiation.
-        * exponent (uint32_t): the exponent of exponentiation.
-        * modulus (uint32_t): the modulus of the operation.
-    
-    Returns:
-        * answer (uint32_t): the result of fast expoenetiation. 
+/**
+ * 32 bit Modular Exponentiation.
+ *
+ * Calculates (base^exponent) % modulus. Procedure is described in the class notes.
+ *
+ * @param base the base of exponentiation.
+ * @param exponent the exponent of exponentiation.
+ * @param modulus the modulus of the operation.
+ * @return answer the result of fast expoenetiation. 
 */
 uint32_t powmod(uint32_t base, uint32_t exponent, uint32_t modulus)
 {
