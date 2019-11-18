@@ -1,3 +1,14 @@
+//==//--//==//--//==//--//==//--//==//--//==//--//==//--//==//--//==//--//==//
+//    
+//      Student 1:          Benjamin Kong -- 1573684
+//      Student 2:          Michael Kwok  -- 1548454
+//
+//      CMPUT 274:          Fall 2019
+//
+//      Assignment 2:       Encrypted Communication
+//
+//--//==//--//==//--//==//--//==//--//==//--//==//--//==//--//==//--//==//--//
+
 #include <Arduino.h>
 
 #include "encryption.h"
@@ -37,7 +48,7 @@ struct ArduinoConstants {
  * The provided uint32_from_serial3() function did not seem to work, and this
  * was our solution.
  * 
- * @param &properties A reference to the "constants" of this Arduino
+ * @param &properties: A reference to the "constants" of this Arduino
  * @return The decrypted character.
  */
 char receive(const ArduinoConstants& constants)
@@ -55,8 +66,8 @@ char receive(const ArduinoConstants& constants)
 /**
  * Encrypts a message, then sends it as four bytes to the other Arduino.
  * 
- * @param message the message to be encrypted and sent to the other Arduino
- * @param &properties A reference to the "constants" of this Arduino.
+ * @param message: the message to be encrypted and sent to the other Arduino
+ * @param &properties: A reference to the "constants" of this Arduino.
  */
 void send(char message, const ArduinoConstants& constants)
 {
@@ -74,7 +85,7 @@ void send(char message, const ArduinoConstants& constants)
  * Wait for input from the user. If there is a message, the Arduino will send the
  * message to the other Arduino once it has been encrypted in the 'send' function.
  * 
- * @param &properties A reference to the "constants" of this Arduino.
+ * @param &properties: A reference to the "constants" of this Arduino.
  */
 void clientLoop(const ArduinoConstants& constants)
 {
@@ -101,7 +112,7 @@ void clientLoop(const ArduinoConstants& constants)
  * Wait for a message from the other Arduino. As soon as a new message is available,
  * it will print the message after it is decrypted in the 'receive' function.
  * 
- * @param &properties A reference to the "constants" of this Arduino.
+ * @param &properties: A reference to the "constants" of this Arduino.
  */
 void serverLoop(const ArduinoConstants& constants)
 {
