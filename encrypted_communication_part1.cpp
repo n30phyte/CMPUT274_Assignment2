@@ -66,17 +66,19 @@ char receive(const ArduinoConstants& constants)
 /**
  * Encrypts a message, then sends it as four bytes to the other Arduino.
  * 
+ * 
+ * The provided uint32_from_serial3() function did not seem to work, and this
+ * was our solution.
  * @param message: the message to be encrypted and sent to the other Arduino
  * @param &properties: A reference to the "constants" of this Arduino.
  */
 void send(char message, const ArduinoConstants& constants)
 {
-    uint32_t encrypted = powmod(message, constants.otherPublicKey, constants.otherModulus);
+    Converter conv;
 
-    Serial3.write((char)(encrypted >> 0));
-    Serial3.write((char)(encrypted >> 8));
-    Serial3.write((char)(encrypted >> 16));
-    Serial3.write((char)(encrypted >> 24));
+    conv.message = powmod(message, constants.otherPublicKey, constants.otherModulus);
+
+    Serial3.write(conv.buffer, 4);
 }
 
 /**
@@ -139,17 +141,17 @@ void setup()
 }
 
 /**
- * Main function of program..
+ * Main function of program.
  */
 int main()
 {
 
     setup();
 
-    // INPUT_PULLUP defines 5V in as LOW and no voltage as HIGH, so invert the reading.
-    bool serverPin = !digitalRead(ID_PIN);
+    bool serverPin = digitalRead(ID_PIN);
 
     if (serverPin) {
+        Serial.println("This is server.");
         // Setup private keys, public keys and moduli.
         ArduinoConstants consts = {
             .thisPrivateKey = SERVER_PRIVATE_KEY,
@@ -162,7 +164,7 @@ int main()
             serverLoop(consts);
         }
     } else {
-
+        Serial.println("This is client.");
         ArduinoConstants consts = {
             .thisPrivateKey = CLIENT_PRIVATE_KEY,
             .thisModulus = CLIENT_MODULUS,
