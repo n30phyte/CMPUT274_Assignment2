@@ -14,14 +14,6 @@
 const int ID_PIN = 13;
 
 /**
- * Store the read bytes in buffer, directly get uint32_t in message.
- */
-union Converter {
-  uint32_t message = 0;
-  char buffer[4];
-};
-
-/**
  * Stores private keys, public keys and moduli.
  */
 struct ArduinoConstants {
@@ -33,14 +25,23 @@ struct ArduinoConstants {
 };
 
 /**
+ * Store the read bytes in buffer, directly get uint32_t in message.
+ */
+union Converter {
+  uint32_t message = 0;
+  char buffer[4];
+};
+
+/**
  * The provided uint32_from_serial3() function did not seem to work, and this
  * was our solution.
  */
 uint32_t receiveUint32() {
   Converter conv;
 
-  // Read 4 bytes into the `Converter' union.
+  // Read 4 bytes into the "buffer". This will be read from "message".
   Serial3.readBytes(conv.buffer, 4);
+
   return conv.message;
 }
 /**
@@ -51,6 +52,7 @@ void sendUint32(uint32_t number) {
   Converter conv;
 
   conv.message = number;
+
   // Write 4 bytes from the "buffer".
   Serial3.write(conv.buffer, 4);
 }
@@ -139,11 +141,11 @@ uint16_t generatePrime(int minSize) {
   auto number = generateNumber(minSize);
 
   // 2^{k+1} -1
-  const uint16_t overflowLimit = (1 << (minSize + 1)) - 1;
+  const uint16_t overflowLimit = (1U << (minSize + 1)) - 1;
 
   while (!isPrime(number)) {
     if (number == overflowLimit) {
-      number = (1 << minSize);
+      number = (1U << minSize);
     } else {
       number++;
     }
@@ -153,12 +155,12 @@ uint16_t generatePrime(int minSize) {
 uint16_t generateCoprime(int minSize, uint32_t totient) {
   auto number = generateNumber(minSize);
 
-  // 2^{k+1} -1
-  const uint16_t overflowLimit = (1 << (minSize + 1)) - 1;
+  // 2^{minSize+1} - 1
+  const uint16_t overflowLimit = (1U << (minSize + 1)) - 1;
 
   while (gcd(number, totient) != 1) {
     if (number == overflowLimit) {
-      number = (1 << minSize);
+      number = (1U << minSize);
     } else {
       number++;
     }
@@ -167,11 +169,14 @@ uint16_t generateCoprime(int minSize, uint32_t totient) {
   return number;
 }
 
-/** Waits for a certain number of bytes on Serial3 or timeout
+/**
+ * Waits for a certain number of bytes on Serial3 or timeout
+ *
  * @param nbytes : the number of bytes we want
  * @param timeout : timeout period (ms); specifying a negative number
  * turns off timeouts (the function waits indefinitely
  * if timeouts are turned off).
+ *
  * @return True if the required number of bytes have arrived .
  */
 bool wait_on_serial3(uint8_t nbytes, long timeout) {
@@ -246,6 +251,7 @@ int main() {
               sentKey = true;
             }
           } else {
+            sentKey = false;
             currentState = Start;
           }
           break;
@@ -258,6 +264,7 @@ int main() {
               currentState = WaitForKey;
             }
           } else {
+            sentKey = false;
             currentState = Start;
           }
           break;
@@ -265,6 +272,7 @@ int main() {
           serverLoop(consts);
           break;
         default:
+          sentKey = false;
           currentState = Start;
           break;
       }

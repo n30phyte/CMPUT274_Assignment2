@@ -7,9 +7,9 @@
  *      Assignment 2:       Encrypted Communication
  *
  * This header file contains some of functions defined in encryption.cpp
- * Functions exposed here are only ones useful in the main encrypted_communication.cpp
- * file.
- * 
+ * Functions exposed here are only ones useful in the main
+ *encrypted_communication.cpp file.
+ *
  * Written to make testing our code from desktop C++ much easier, and to allow
  * the main file to be cleaner.
  *****************************************************************************/
@@ -24,7 +24,7 @@
  * @param base the base of exponentiation.
  * @param exponent the exponent of exponentiation.
  * @param modulus the modulus of the operation.
- * @return answer the result of fast expoenetiation. 
+ * @return answer the result of fast expoenetiation.
  */
 uint32_t powmod(uint32_t base, uint32_t exponent, uint32_t modulus);
 
@@ -45,4 +45,5 @@ bool isPrime(uint16_t number);
  */
 uint32_t gcd(uint32_t value1, uint32_t value2);
 
-void extendedEuclideanAlgorithm(uint32_t& x, uint32_t& y, uint32_t e, uint32_t totient);
+void extendedEuclideanAlgorithm(uint32_t& x, uint32_t& y, uint32_t e,
+                                uint32_t totient);
