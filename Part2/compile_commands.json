@@ -1,0 +1,39 @@
+[
+    {
+        "arguments": [
+            "/usr/bin/avr-g++",
+            "-c",
+            "-D__PROG_TYPES_COMPAT__",
+            "-mmcu=atmega2560",
+            "-DF_CPU=16000000L",
+            "-DARDUINO=185",
+            "-DARDUINO_ARCH_AVR",
+            "-I/usr/share/arduino/hardware/arduino/avr/cores/arduino",
+            "-I/usr/share/arduino/hardware/arduino/avr/cores/arduino/api",
+            "-I/usr/share/arduino/hardware/arduino/avr/variants/mega",
+            "-I/usr/share/arduino/hardware/arduino/avr/libraries/SPI/src",
+            "-I/home/n30phyte/arduino-ua/libraries/Adafruit_GFX",
+            "-I/home/n30phyte/arduino-ua/libraries/MCUFRIEND_kbv",
+            "-I/home/n30phyte/arduino-ua/libraries/MCUFRIEND_kbv/utility",
+            "-I/home/n30phyte/arduino-ua/libraries/SD",
+            "-I/home/n30phyte/arduino-ua/libraries/SD/utility",
+            "-I/home/n30phyte/arduino-ua/libraries/TouchScreen",
+            "-Wall",
+            "-ffunction-sections",
+            "-fdata-sections",
+            "-Os",
+            "-fpermissive",
+            "-fno-exceptions",
+            "-std=gnu++11",
+            "-fno-threadsafe-statics",
+            "-flto",
+            "-fno-devirtualize",
+            "-fdiagnostics-color=always",
+            "-o",
+            "build-mega-atmega2560/encrypted_communication_part2.cpp.o",
+            "encrypted_communication_part2.cpp"
+        ],
+        "directory": "/home/n30phyte/Documents/CMPUT274_Assignment2/Part2",
+        "file": "encrypted_communication_part2.cpp"
+    }
+]

@@ -11,14 +11,6 @@
 
 #include "encryption.h"
 
-const uint32_t SERVER_PUBLIC_KEY = 7;
-const uint32_t SERVER_PRIVATE_KEY = 27103;
-const uint32_t SERVER_MODULUS = 95477;
-
-const uint32_t CLIENT_PUBLIC_KEY = 11;
-const uint32_t CLIENT_PRIVATE_KEY = 38291;
-const uint32_t CLIENT_MODULUS = 84823;
-
 const int ID_PIN = 13;
 
 /**
@@ -33,60 +25,74 @@ union Converter {
  * Stores private keys, public keys and moduli.
  */
 struct ArduinoConstants {
-    const uint32_t thisPrivateKey;
-    const uint32_t thisModulus;
-    const uint32_t otherPublicKey;
-    const uint32_t otherModulus;
+    uint32_t thisPrivateKey;
+    uint32_t thisModulus;
+    uint32_t thisPublicKey;
+    uint32_t otherPublicKey;
+    uint32_t otherModulus;
 };
 
 /**
- * Receives an encrypted message, and returns the decrypted character.
- * 
- * Reads 4 bytes from the Serial3 stream, storing it in union that allows a
- * char[4] to be accessed as a uint32_t.
- * 
  * The provided uint32_from_serial3() function did not seem to work, and this
  * was our solution.
- * 
- * @param &properties: A reference to the "constants" of this Arduino
- * @return The decrypted character.
  */
-char receive(const ArduinoConstants& constants)
+uint32_t receiveUint32()
 {
     Converter conv;
 
     // Read 4 bytes into the `Converter' union.
     Serial3.readBytes(conv.buffer, 4);
+    return conv.message;
+}
+/**
+ * The provided uint32_to_serial3() function did not seem to work, and this
+ * was our solution.
+ */
+void sendUint32(uint32_t number)
+{
+    Converter conv;
 
-    char decrypted = powmod(conv.message, constants.thisPrivateKey, constants.thisModulus);
+    conv.message = number;
+    // Write 4 bytes from the "buffer".
+    Serial3.write(conv.buffer, 4);
+}
+
+/**
+ * Receives an encrypted message, and returns the decrypted character.
+ *
+ * Reads 4 bytes from the Serial3 stream, storing it in union that allows a
+ * char[4] to be accessed as a uint32_t.
+ *
+ * The provided uint32_from_serial3() function did not seem to work, and this
+ * was our solution.
+ *
+ * @param &properties: A reference to the "constants" of this Arduino
+ * @return The decrypted character.
+ */
+char receive(const ArduinoConstants& constants)
+{
+    char decrypted = powmod(receiveUint32(), constants.thisPrivateKey, constants.thisModulus);
 
     return decrypted;
 };
 
 /**
  * Encrypts a message, then sends it as four bytes to the other Arduino.
- * 
- * 
- * The provided uint32_from_serial3() function did not seem to work, and this
- * was our solution.
+ *
  * @param message: the message to be encrypted and sent to the other Arduino
  * @param &properties: A reference to the "constants" of this Arduino.
  */
 void send(char message, const ArduinoConstants& constants)
 {
-    Converter conv;
-
-    conv.message = powmod(message, constants.otherPublicKey, constants.otherModulus);
-
-    Serial3.write(conv.buffer, 4);
+    sendUint32(powmod(message, constants.otherPublicKey, constants.otherModulus));
 }
 
 /**
- * Client processing loop.
- * 
+ * Client message processing loop.
+ *
  * Wait for input from the user. If there is a message, the Arduino will send the
  * message to the other Arduino once it has been encrypted in the 'send' function.
- * 
+ *
  * @param &properties: A reference to the "constants" of this Arduino.
  */
 void clientLoop(const ArduinoConstants& constants)
@@ -109,11 +115,11 @@ void clientLoop(const ArduinoConstants& constants)
 }
 
 /**
- * Server processing loop.
- * 
+ * Server message processing loop.
+ *
  * Wait for a message from the other Arduino. As soon as a new message is available,
  * it will print the message after it is decrypted in the 'receive' function.
- * 
+ *
  * @param &properties: A reference to the "constants" of this Arduino.
  */
 void serverLoop(const ArduinoConstants& constants)
@@ -123,9 +129,69 @@ void serverLoop(const ArduinoConstants& constants)
     }
 }
 
+uint16_t generateNumber(int minSize)
+{
+    uint16_t number = 0;
+    for (int i = 0; i < minSize; i++) {
+        auto LSB = analogRead(1) & 0b1;
+        number |= (LSB << i);
+        delay(1000);
+    }
+}
+
+uint16_t generatePrime(int minSize)
+{
+    auto number = generateNumber(minSize);
+
+    // 2^{k+1} -1
+    const uint16_t overflowLimit = (1 << (minSize + 1)) - 1;
+
+    while (!isPrime(number)) {
+        if (number == overflowLimit) {
+            number = (1 << minSize);
+        } else {
+            number++;
+        }
+    }
+}
+
+uint16_t generateCoprime(int minSize, uint32_t totient)
+{
+    auto number = generateNumber(minSize);
+
+    // 2^{k+1} -1
+    const uint16_t overflowLimit = (1 << (minSize + 1)) - 1;
+
+    while (gcd(number, totient) != 1) {
+        if (number == overflowLimit) {
+            number = (1 << minSize);
+        } else {
+            number++;
+        }
+    }
+
+    return number;
+}
+
+/** Waits for a certain number of bytes on Serial3 or timeout
+* @param nbytes : the number of bytes we want
+* @param timeout : timeout period (ms); specifying a negative number
+* turns off timeouts (the function waits indefinitely
+* if timeouts are turned off).
+* @return True if the required number of bytes have arrived .
+*/
+bool wait_on_serial3(uint8_t nbytes, long timeout)
+{
+    unsigned long deadline = millis() + timeout; // wraparound not a problem
+    while (Serial3.available() < nbytes && (timeout < 0 || millis() < deadline)) {
+        delay(1); // be nice , no busy loop
+    }
+    return Serial3.available() >= nbytes;
+}
+
 /**
  * Setup function.
- * 
+ *
  * Initializes Serial for communication to the computer
  * and Serial3, which is used for communication between the two arduinos.
  * Calls Arduino initialization code (init())
@@ -145,35 +211,125 @@ void setup()
  */
 int main()
 {
-
     setup();
+
+    enum States {
+        Start,
+        WaitForKey,
+        WaitForAck,
+        DataExchange
+    };
 
     bool serverPin = digitalRead(ID_PIN);
 
+    ArduinoConstants consts;
+    States currentState = Start;
+
+    auto p = generatePrime(14);
+    auto q = generatePrime(15);
+
+    uint32_t totient = (p - 1) * (q - 1);
+
+    consts.thisModulus = p * q;
+
     if (serverPin) {
         Serial.println("This is server.");
-        // Setup private keys, public keys and moduli.
-        ArduinoConstants consts = {
-            .thisPrivateKey = SERVER_PRIVATE_KEY,
-            .thisModulus = SERVER_MODULUS,
-            .otherPublicKey = CLIENT_PUBLIC_KEY,
-            .otherModulus = CLIENT_MODULUS
-        };
+
+        bool sentKey = false;
 
         while (true) {
-            serverLoop(consts);
+            switch (currentState) {
+            case Start:
+                if (wait_on_serial3(1, 1000)) {
+                    if (Serial3.read() == 'C') {
+                        // Request
+                        currentState = WaitForKey;
+                    }
+                }
+
+                break;
+            case WaitForKey:
+                if (wait_on_serial3(8, 1000)) {
+
+                    consts.otherPublicKey = receiveUint32();
+                    consts.otherModulus = receiveUint32();
+                    if (!sentKey) {
+                        Serial3.write("A");
+                        sendUint32(consts.thisPublicKey);
+                        sendUint32(consts.thisModulus);
+                        currentState = WaitForAck;
+                        sentKey = true;
+                    }
+                } else {
+                    currentState = Start;
+                }
+                break;
+            case WaitForAck:
+                if (wait_on_serial3(1, 1000)) {
+                    char response = Serial3.read();
+                    if (response == 'A') {
+                        currentState = DataExchange;
+                    } else if (response == 'C') {
+                        currentState = WaitForKey;
+                    }
+                } else {
+                    currentState = Start;
+                }
+                break;
+            case DataExchange:
+                serverLoop(consts);
+                break;
+            default:
+                currentState = Start;
+                break;
+            }
         }
     } else {
         Serial.println("This is client.");
-        ArduinoConstants consts = {
-            .thisPrivateKey = CLIENT_PRIVATE_KEY,
-            .thisModulus = CLIENT_MODULUS,
-            .otherPublicKey = SERVER_PUBLIC_KEY,
-            .otherModulus = SERVER_MODULUS
-        };
+
+        // Variable reused for different time operations.
+        unsigned long time;
 
         while (true) {
-            clientLoop(consts);
+            switch (currentState) {
+            case Start:
+
+                Serial3.write("C");
+                sendUint32(consts.thisPublicKey);
+                sendUint32(consts.thisModulus);
+                currentState = WaitForAck;
+                time = millis();
+                break;
+
+            case WaitForAck:
+
+                bool exchangeSucceed = false;
+
+                if (wait_on_serial3(9, 1000)) {
+                    if (Serial3.read() == 'A') {
+                        // Ack
+                        consts.otherPublicKey = receiveUint32();
+                        consts.otherModulus = receiveUint32();
+                        Serial3.write("A");
+                        exchangeSucceed = true;
+                    }
+                }
+
+                if (exchangeSucceed) {
+                    currentState = DataExchange;
+                } else {
+                    // if more than 1000 ms has passed and exchange has not succeeded
+                    currentState = Start;
+                }
+
+                break;
+            case DataExchange:
+                clientLoop(consts);
+                break;
+            default:
+                currentState = Start;
+                break;
+            }
         }
     }
 

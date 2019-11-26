@@ -9,6 +9,8 @@
  *****************************************************************************/
 #include "encryption.h"
 
+#include <math.h>
+
 /**
  * 32 bit Modular Multiplication.
  * 
@@ -19,7 +21,7 @@
  * @param value2 the second number to multiply.
  * @param modulus the modulus of the operation.
  * @return the result of modular multiplication. 
-*/
+ */
 uint32_t mulmod(uint32_t value1, uint32_t value2, uint32_t modulus)
 {
     uint32_t answer = 0;
@@ -57,7 +59,7 @@ uint32_t mulmod(uint32_t value1, uint32_t value2, uint32_t modulus)
  * @param exponent the exponent of exponentiation.
  * @param modulus the modulus of the operation.
  * @return answer the result of fast expoenetiation. 
-*/
+ */
 uint32_t powmod(uint32_t base, uint32_t exponent, uint32_t modulus)
 {
     uint32_t answer = 1;
@@ -74,4 +76,42 @@ uint32_t powmod(uint32_t base, uint32_t exponent, uint32_t modulus)
     }
 
     return answer;
+}
+/**
+ * Swap two ints
+ * 
+ * @param a first number
+ * @param b second number
+ */
+void swap(uint32_t& a, uint32_t& b)
+{
+    auto temp = a;
+    a = b;
+    b = temp;
+}
+
+/**
+ * Primality test. Returns true if the number is a prime.
+ *
+ * @param number the number to test.
+ * @return true if prime, false if composite.
+ */
+bool isPrime(uint16_t number)
+{
+    for (uint16_t i = 2; i < sqrt(number); i++) {
+        if ((number % i) == 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+uint32_t gcd(uint32_t value1, uint32_t value2)
+{
+    while (value2 > 0) {
+        value1 = value1 % value2;
+        swap(value1, value2);
+    }
+
+    return value1;
 }

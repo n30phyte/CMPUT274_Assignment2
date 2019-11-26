@@ -2,8 +2,7 @@
     "configurations": [
         {
             "name": "Test",
-            "includePath": [
-            ],
+            "includePath": [],
             "compilerPath": "/usr/bin/g++",
             "intelliSenseMode": "gcc-x64",
             "cppStandard": "c++11",
@@ -31,7 +30,8 @@
                 "/home/n30phyte/arduino-ua/libraries/SD",
                 "/home/n30phyte/arduino-ua/libraries/SD/utility",
                 "/home/n30phyte/arduino-ua/libraries/TouchScreen"
-            ]
+            ],
+            "compileCommands": "${workspaceFolder}/Part2/compile_commands.json"
         }
     ],
     "version": 4
