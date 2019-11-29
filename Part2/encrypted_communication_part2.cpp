@@ -118,8 +118,9 @@ uint16_t generateNumber(int minSize) {
   for (int i = 0; i < minSize; i++) {
     auto LSB = analogRead(1) & 0b1;
     number |= (LSB << i);
-    delay(1000);
+    delay(5);
   }
+  return number;
 }
 
 uint16_t generatePrime(int minSize) {
@@ -135,6 +136,8 @@ uint16_t generatePrime(int minSize) {
       number++;
     }
   }
+
+  return number;
 }
 
 uint16_t generateCoprime(int minSize, uint32_t totient) {
@@ -156,6 +159,8 @@ uint16_t generateCoprime(int minSize, uint32_t totient) {
 
 /**
  * Waits for a certain number of bytes on Serial3 or timeout
+ *
+ *
  *
  * @param nbytes : the number of bytes we want
  * @param timeout : timeout period (ms); specifying a negative number
@@ -201,15 +206,28 @@ int main() {
   ArduinoConstants consts;
   States currentState = Start;
 
-  auto p = generatePrime(14);
-  auto q = generatePrime(15);
+  Serial.println("Generating primes...");
 
+  uint16_t p = generatePrime(14);
+  // typed to force a promotion on multiplication
+  uint32_t q = generatePrime(15);
+
+  // Calculate some constants we use.
+  consts.thisModulus = p * q;
   uint32_t totient = (p - 1) * (q - 1);
 
-  consts.thisModulus = p * q;
+  Serial.println("Generating coprime...");
   consts.thisPublicKey = generateCoprime(15, totient);
+
   extendedEuclideanAlgorithm(consts.thisPrivateKey, consts.thisPublicKey,
                              totient);
+
+  Serial.print("This private key: ");
+  Serial.println(consts.thisPrivateKey);
+  Serial.print("This public key: ");
+  Serial.println(consts.thisPublicKey);
+  Serial.print("This modulus: ");
+  Serial.println(consts.thisModulus);
 
   if (serverPin) {
     Serial.println("This is server.");
@@ -257,8 +275,10 @@ int main() {
           }
           break;
         case DataExchange:
-          if (Serial3.available() > 0) {
-            Serial.print(receive(consts));
+          while (true) {
+            if (Serial3.available() > 0) {
+              Serial.print(receive(consts));
+            }
           }
           break;
         default:
@@ -271,7 +291,7 @@ int main() {
     Serial.println("This is client.");
 
     // Variable reused for different time operations.
-    unsigned long time;
+    bool exchangeSucceed = false;
 
     while (true) {
       switch (currentState) {
@@ -281,12 +301,9 @@ int main() {
           sendUint32(consts.thisPublicKey);
           sendUint32(consts.thisModulus);
           currentState = WaitForAck;
-          time = millis();
           break;
 
         case WaitForAck:
-
-          bool exchangeSucceed = false;
 
           if (wait_on_serial3(9, 1000)) {
             if (Serial3.read() == 'A') {
@@ -307,7 +324,10 @@ int main() {
 
           break;
         case DataExchange:
-          clientLoop(consts);
+          Serial.println("Ready for input.");
+          while (true) {
+            clientLoop(consts);
+          }
           break;
         default:
           currentState = Start;
