@@ -44,6 +44,7 @@ uint32_t receiveUint32() {
 
   return conv.message;
 }
+
 /**
  * The provided uint32_to_serial3() function did not seem to work, and this
  * was our solution.
@@ -113,6 +114,19 @@ void clientLoop(const ArduinoConstants& constants) {
   }
 }
 
+/**
+ * Geneartes a random number that is at least as large as 'minSize'. 
+ * 
+ * The 'randomness' is a result of reading an unused arduino pin (in 
+ * this case, the 1st pin is unused) using analogRead, which returns 
+ * a random integer between 0 and 1023. We take the least significant 
+ * bit as many times from this random number as needed to generate a 
+ * number at least as large as 'minSize'.
+ * 
+ * @param minSize : the minimum size of the random number we want
+ * 
+ * @return the random number generated.
+ */
 uint16_t generateNumber(int minSize) {
   uint16_t number = 0;
   for (int i = 0; i < minSize; i++) {
@@ -123,6 +137,17 @@ uint16_t generateNumber(int minSize) {
   return number;
 }
 
+/**
+ * Generates a random prime number that is at least as large as 'minSize'.
+ * 
+ * We generate a random number of at least minSize using generateNumber, then
+ * increment it until it is a prime number. We also handle the case where the
+ * number may overflow by wrapping around from 2^(k+1)-1 back to 2^k.
+ * 
+ * @param minSize : the minimum size of the prime number we want
+ * 
+ * @return the random prime number generated.
+ */
 uint16_t generatePrime(int minSize) {
   auto number = generateNumber(minSize);
 
@@ -140,6 +165,19 @@ uint16_t generatePrime(int minSize) {
   return number;
 }
 
+/**
+ * Generates a random number that is coprime to 'totient' that is at least
+ * as large as 'minSize'. 
+ * 
+ * We generate a random number of at least minSize using generateNumber, 
+ * then increment it until it is coprime to 'totient' (number is coprime 
+ * if gcd(number, totient) = 1). We also handle the case where the number 
+ * may overflow by wrapping around from 2^(k+1)-1 back to 2^k.
+ * 
+ * @param minSize : the minimum size of the prime number we want
+ * 
+ * @return the random coprime number generated.
+ */
 uint16_t generateCoprime(int minSize, uint32_t totient) {
   auto number = generateNumber(minSize);
 
@@ -158,16 +196,14 @@ uint16_t generateCoprime(int minSize, uint32_t totient) {
 }
 
 /**
- * Waits for a certain number of bytes on Serial3 or timeout
- *
- *
+ * Waits for a certain number of bytes on Serial3 or timeout.
  *
  * @param nbytes : the number of bytes we want
  * @param timeout : timeout period (ms); specifying a negative number
  * turns off timeouts (the function waits indefinitely
  * if timeouts are turned off).
  *
- * @return True if the required number of bytes have arrived .
+ * @return True if the required number of bytes have arrived.
  */
 bool wait_on_serial3(uint8_t nbytes, long timeout) {
   unsigned long deadline = millis() + timeout;  // wraparound not a problem

@@ -35,6 +35,7 @@ Running Instructions:
 	3. With two separate terminals in the Linux VM, navigate to the directory containing the files *encrypted_communication_part1.cpp, *encryption.cpp, and *Makefile. On each terminal, run "make upload-0 && serial-mon-0" on one and "make upload-1 && serial-mon-1" on the other.
 	4. Once prompted for input on the client arduino, you can press characters and they will be sent to the server arduino and displayed on the serial monitor. The transmitted character is encrypted, then decrypted.
 
+
 Notes and Assumptions:
 	- Serial3 waiting code was from the provided assignment pdf.
-	- 
+	- Must initiate server before initiating client.

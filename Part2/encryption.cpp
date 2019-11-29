@@ -17,10 +17,11 @@
  * Calculates the modular multplication of 2 values without requiring more than
  * 32 bits at any point during computation.
  *
- * @param[in] value1  First number to multiply.
- * @param[in] value2  Second number to multiply.
- * @param[in] modulus Modulus of the operation.
- * @return            Result of modular multiplication.
+ * @param[in] value1    First number to multiply.
+ * @param[in] value2    Second number to multiply.
+ * @param[in] modulus   Modulus of the operation.
+ * 
+ * @return    answer    Result of modular multiplication.
  */
 uint32_t mulmod(uint32_t value1, uint32_t value2, uint32_t modulus) {
   uint32_t answer = 0;
@@ -57,7 +58,7 @@ uint32_t mulmod(uint32_t value1, uint32_t value2, uint32_t modulus) {
  * @param[in]   base        Base of exponentiation.
  * @param[in]   exponent    Exponent of exponentiation.
  * @param[in]   modulus     Modulus of the operation.
- * @return answer the result of fast expoenetiation.
+ * @return      answer      Result of fast expoenetiation.
  */
 uint32_t powmod(uint32_t base, uint32_t exponent, uint32_t modulus) {
   uint32_t answer = 1;
@@ -75,6 +76,7 @@ uint32_t powmod(uint32_t base, uint32_t exponent, uint32_t modulus) {
 
   return answer;
 }
+
 /**
  * Swap two uint32_t.
  *
@@ -103,7 +105,7 @@ bool isPrime(uint16_t number) {
 }
 
 /**
- * Find the greatest common divisor
+ * Finds the greatest common divisor.
  *
  * @param[in] value1  The first number.
  * @param[in] value2  The second number.
@@ -120,9 +122,9 @@ uint32_t gcd(uint32_t value1, uint32_t value2) {
 }
 
 /**
- * Modulus but always positive
+ * Modulus but always positive.
  *
- * @param[in] x  The first number.
+ * @param[in] x       The first number.
  * @param[in] value2  The second number.
  *
  * @return            The calculated GCD.
@@ -166,5 +168,6 @@ void extendedEuclideanAlgorithm(uint32_t& x, uint32_t e, uint32_t totient) {
     t[i + 1] = t[i - 1] - (q * t[i]);
     i++;
   }
+  
   x = reduce_mod(s[i - 1], totient);
 }
