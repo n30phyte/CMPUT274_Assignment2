@@ -150,5 +150,5 @@ void extendedEuclideanAlgorithm(uint32_t& x, uint32_t e, uint32_t totient) {
     t[i + 1] = t[i - 1] - (q * t[i]);
     i++;
   }
-  x = reduce_mod(s[i - 1], totient);
+  x = s[i - 1];
 }

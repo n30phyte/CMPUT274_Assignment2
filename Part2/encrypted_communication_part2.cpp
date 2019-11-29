@@ -113,21 +113,6 @@ void clientLoop(const ArduinoConstants& constants) {
   }
 }
 
-/**
- * Server message processing loop.
- *
- * Wait for a message from the other Arduino. As soon as a new message is
- * available, it will print the message after it is decrypted in the 'receive'
- * function.
- *
- * @param &properties: A reference to the "constants" of this Arduino.
- */
-void serverLoop(const ArduinoConstants& constants) {
-  if (Serial3.available() > 0) {
-    Serial.print(receive(constants));
-  }
-}
-
 uint16_t generateNumber(int minSize) {
   uint16_t number = 0;
   for (int i = 0; i < minSize; i++) {
@@ -222,6 +207,9 @@ int main() {
   uint32_t totient = (p - 1) * (q - 1);
 
   consts.thisModulus = p * q;
+  consts.thisPublicKey = generateCoprime(15, totient);
+  extendedEuclideanAlgorithm(consts.thisPrivateKey, consts.thisPublicKey,
+                             totient);
 
   if (serverPin) {
     Serial.println("This is server.");
@@ -269,7 +257,9 @@ int main() {
           }
           break;
         case DataExchange:
-          serverLoop(consts);
+          if (Serial3.available() > 0) {
+            Serial.print(receive(consts));
+          }
           break;
         default:
           sentKey = false;
