@@ -125,17 +125,15 @@ uint32_t gcd(uint32_t value1, uint32_t value2) {
  * Modulus but always positive.
  *
  * @param[in] x       The first number.
- * @param[in] value2  The second number.
+ * @param[in] m       The modulus.
  *
- * @return            The calculated GCD.
+ * @return            The result.
  */
-uint32_t reduce_mod(int32_t x, uint32_t totient) {
+int32_t reduce_mod(int32_t x, uint32_t m) {
   if (x < 0) {
-    auto z = (-x) / (totient + 1);
-    return (x + (z * totient)) % totient;
+    x += ((-x / m) + 1) * m;
   }
-  // else
-  return (x % totient);
+  return x % m;
 }
 
 /**

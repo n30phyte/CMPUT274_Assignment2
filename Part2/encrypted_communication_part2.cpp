@@ -238,6 +238,21 @@ void setup() {
   pinMode(ID_PIN, INPUT_PULLUP);
 }
 
+void generateKeys(ArduinoConstants& constants) {
+  uint16_t p = generatePrime(14);
+  // typed to force a promotion on multiplication
+  uint32_t q = generatePrime(15);
+
+  // Calculate some constants we use.
+  constants.thisModulus = p * q;
+  uint32_t totient = (p - 1) * (q - 1);
+
+  constants.thisPublicKey = generateCoprime(15, totient);
+
+  extendedEuclideanAlgorithm(constants.thisPrivateKey, constants.thisPublicKey,
+                             totient);
+}
+
 /**
  * Main function of program.
  *
@@ -257,29 +272,7 @@ int main() {
 
   ArduinoConstants consts;
   States currentState = Start;
-
-  Serial.println("Generating primes...");
-
-  uint16_t p = generatePrime(14);
-  // typed to force a promotion on multiplication
-  uint32_t q = generatePrime(15);
-
-  // Calculate some constants we use.
-  consts.thisModulus = p * q;
-  uint32_t totient = (p - 1) * (q - 1);
-
-  Serial.println("Generating coprime...");
-  consts.thisPublicKey = generateCoprime(15, totient);
-
-  extendedEuclideanAlgorithm(consts.thisPrivateKey, consts.thisPublicKey,
-                             totient);
-
-  Serial.print("This private key: ");
-  Serial.println(consts.thisPrivateKey);
-  Serial.print("This public key: ");
-  Serial.println(consts.thisPublicKey);
-  Serial.print("This modulus: ");
-  Serial.println(consts.thisModulus);
+  generateKeys(consts);
 
   if (serverPin) {
     // SERVER CODE //
@@ -342,7 +335,6 @@ int main() {
           break;
 
         case DataExchange:
-          // Begin communication (listen for input/output)
           communication(consts);
           break;
 
@@ -397,7 +389,6 @@ int main() {
           break;
 
         case DataExchange:
-          // Begin communication (listen for input/output)
           communication(consts);
           break;
 
@@ -411,13 +402,3 @@ int main() {
 
   return 0;
 }
-
-/**
- * CLient to server first:
- * Client to server works
- * server to client doesnt
- *
- * Server to client first:
- *server to client doesnt
- Client to server works
- */
