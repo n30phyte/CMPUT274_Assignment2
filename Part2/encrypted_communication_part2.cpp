@@ -124,7 +124,7 @@ void communication(const ArduinoConstants& constants) {
 }
 
 /**
- * Generates a random number that is at least as large as 'minSize'. 
+ * Generates a random number that is at least as large as 2^minSize. 
  * 
  * The 'randomness' is a result of reading an unused arduino pin (in 
  * this case, the 1st pin is unused) using analogRead, which returns 
@@ -132,7 +132,7 @@ void communication(const ArduinoConstants& constants) {
  * bit as many times from this random number as needed to generate a 
  * number at least as large as 'minSize'.
  * 
- * @param minSize : the minimum size of the random number we want
+ * @param minSize : the minimum size of the random number we want (2^minSize)
  * 
  * @return the random number generated.
  */
@@ -149,13 +149,13 @@ uint16_t generateNumber(int minSize) {
 }
 
 /**
- * Generates a random prime number that is at least as large as 'minSize'.
+ * Generates a random prime number that is at least as large as 2^minSize.
  * 
  * We generate a random number of at least minSize using generateNumber, then
  * increment it until it is a prime number. We also handle the case where the
  * number may overflow by wrapping around from 2^(k+1)-1 back to 2^k.
  * 
- * @param minSize : the minimum size of the prime number we want
+ * @param minSize : the minimum size of the prime number we want (2^minSize)
  * 
  * @return the random prime number generated.
  */
@@ -178,14 +178,14 @@ uint16_t generatePrime(int minSize) {
 
 /**
  * Generates a random number that is coprime to 'totient' that is at least
- * as large as 'minSize'. 
+ * as large as 2^minSize. 
  * 
  * We generate a random number of at least minSize using generateNumber, 
  * then increment it until it is coprime to 'totient' (number is coprime 
  * if gcd(number, totient) = 1). We also handle the case where the number 
  * may overflow by wrapping around from 2^(k+1)-1 back to 2^k.
  * 
- * @param minSize : the minimum size of the prime number we want
+ * @param minSize : the minimum size of the prime number we want (2^minSize)
  * 
  * @return the random coprime number generated.
  */
@@ -245,6 +245,10 @@ void setup() {
  * 
  * First, generate the modulus, totient, private key, and public key.
  * Determines if the arduino running the code is the server or not.
+ * 
+ * Then, follow through with the procedure for the client and server
+ * respectively according to the outline given in the assignment
+ * description.
  */
 int main() {
   setup();
