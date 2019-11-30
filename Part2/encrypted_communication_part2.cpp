@@ -99,8 +99,7 @@ void send(char message, const ArduinoConstants& constants) {
  * 
  * @param &properties: A reference to the "constants" of this Arduino.
  */
-void communication(const ArduinoConstants& constants)
-{   
+void communication(const ArduinoConstants& constants) {   
   // Check if receiving a message.
   if (Serial3.available() > 0) {
     Serial.print(receive(constants));

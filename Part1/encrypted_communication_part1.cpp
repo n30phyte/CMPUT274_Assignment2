@@ -82,73 +82,40 @@ void send(char message, const ArduinoConstants& constants)
 }
 
 /**
- * Client processing loop.
- * 
- * Wait for input from the user. If there is a message, the Arduino will send the
- * message to the other Arduino once it has been encrypted in the 'send' function.
- * 
- * @param &properties: A reference to the "constants" of this Arduino.
- */
-void clientLoop(const ArduinoConstants& constants)
-{
-    if (Serial.available() > 0) {
-        char input = Serial.read();
-        Serial.flush();
-
-        if (input == '\r') {
-            send('\r', constants);
-            send('\n', constants);
-            Serial.println();
-        } else {
-            Serial.print(input);
-            send(input, constants);
-        }
-
-        Serial3.flush();
-    }
-}
-
-/**
- * Server processing loop.
- * 
- * Wait for a message from the other Arduino. As soon as a new message is available,
- * it will print the message after it is decrypted in the 'receive' function.
- * 
- * @param &properties: A reference to the "constants" of this Arduino.
- */
-void serverLoop(const ArduinoConstants& constants)
-{
-    if (Serial3.available() > 0) {
-        Serial.print(receive(constants));
-    }
-}
-
-/**
  * Communication processing loop.
+ * 
+ * First check if receiving a message from the other arduino. If this is the
+ * case, decrypt the message and print it.
+ * 
+ * Then, check for input from the user. If there is a message, the Arduino 
+ * will send the message to the other Arduino once it has been encrypted 
+ * in the 'send' function.
+ * 
+ * @param &properties: A reference to the "constants" of this Arduino.
  */
 void communication(const ArduinoConstants& constants)
 {   
-    // Check if receiving a message.
-    if (Serial3.available() > 0) {
-        Serial.print(receive(constants));
+  // Check if receiving a message.
+  if (Serial3.available() > 0) {
+    Serial.print(receive(constants));
+  }
+
+  // Check for user input.
+  if (Serial.available() > 0) {
+    char input = Serial.read();
+    Serial.flush();
+
+    if (input == '\r') {
+      send('\r', constants);
+      send('\n', constants);
+      Serial.println();
+    } else {
+      Serial.print(input);
+      send(input, constants);
     }
 
-    // Check for user input.
-    if (Serial.available() > 0) {
-        char input = Serial.read();
-        Serial.flush();
-
-        if (input == '\r') {
-            send('\r', constants);
-            send('\n', constants);
-            Serial.println();
-        } else {
-            Serial.print(input);
-            send(input, constants);
-        }
-
-        Serial3.flush();
-    }
+    Serial3.flush();
+  }
 }
 
 /**
@@ -189,7 +156,7 @@ int main()
         };
 
         while (true) {
-            serverLoop(consts);
+            communication(consts);
         }
     } else {
         Serial.println("This is client.");
@@ -201,13 +168,8 @@ int main()
         };
 
         while (true) {
-            clientLoop(consts);
+            communication(consts);
         }
-    }
-
-    // Begin communication loop.
-    while (true) {
-        communication(consts);
     }
 
     return 0;
