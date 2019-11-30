@@ -88,15 +88,25 @@ void send(char message, const ArduinoConstants& constants) {
 }
 
 /**
- * Client message processing loop.
- *
- * Wait for input from the user. If there is a message, the Arduino will send
- * the message to the other Arduino once it has been encrypted in the 'send'
- * function.
- *
+ * Communication processing loop.
+ * 
+ * First check if receiving a message from the other arduino. If this is the
+ * case, decrypt the message and print it.
+ * 
+ * Then, check for input from the user. If there is a message, the Arduino 
+ * will send the message to the other Arduino once it has been encrypted 
+ * in the 'send' function.
+ * 
  * @param &properties: A reference to the "constants" of this Arduino.
  */
-void clientLoop(const ArduinoConstants& constants) {
+void communication(const ArduinoConstants& constants)
+{   
+  // Check if receiving a message.
+  if (Serial3.available() > 0) {
+    Serial.print(receive(constants));
+  }
+
+  // Check for user input.
   if (Serial.available() > 0) {
     char input = Serial.read();
     Serial.flush();
@@ -115,7 +125,7 @@ void clientLoop(const ArduinoConstants& constants) {
 }
 
 /**
- * Geneartes a random number that is at least as large as 'minSize'. 
+ * Generates a random number that is at least as large as 'minSize'. 
  * 
  * The 'randomness' is a result of reading an unused arduino pin (in 
  * this case, the 1st pin is unused) using analogRead, which returns 
@@ -129,11 +139,13 @@ void clientLoop(const ArduinoConstants& constants) {
  */
 uint16_t generateNumber(int minSize) {
   uint16_t number = 0;
+
   for (int i = 0; i < minSize; i++) {
     auto LSB = analogRead(1) & 0b1;
     number |= (LSB << i);
     delay(5);
   }
+
   return number;
 }
 
@@ -231,6 +243,9 @@ void setup() {
 
 /**
  * Main function of program.
+ * 
+ * First, generate the modulus, totient, private key, and public key.
+ * Determines if the arduino running the code is the server or not.
  */
 int main() {
   setup();
@@ -266,6 +281,7 @@ int main() {
   Serial.println(consts.thisModulus);
 
   if (serverPin) {
+    // SERVER CODE //
     Serial.println("This is server.");
 
     bool sentKey = false;
@@ -273,6 +289,7 @@ int main() {
     while (true) {
       switch (currentState) {
         case Start:
+
           if (wait_on_serial3(1, 1000)) {
             if (Serial3.read() == 'C') {
               // Request
@@ -281,7 +298,9 @@ int main() {
           }
 
           break;
+
         case WaitForKey:
+
           if (wait_on_serial3(8, 1000)) {
             consts.otherPublicKey = receiveUint32();
             consts.otherModulus = receiveUint32();
@@ -297,7 +316,9 @@ int main() {
             currentState = Start;
           }
           break;
+
         case WaitForAck:
+
           if (wait_on_serial3(1, 1000)) {
             char response = Serial3.read();
             if (response == 'A') {
@@ -310,20 +331,27 @@ int main() {
             currentState = Start;
           }
           break;
+
         case DataExchange:
+
+          Serial.println("Ready for input/output.");
+
+          // Begin communication (listen for input/output)
           while (true) {
-            if (Serial3.available() > 0) {
-              Serial.print(receive(consts));
-            }
+            communication(consts);
           }
           break;
+
         default:
+
           sentKey = false;
           currentState = Start;
           break;
+
       }
     }
   } else {
+    // CLIENT CODE //
     Serial.println("This is client.");
 
     // Variable reused for different time operations.
@@ -359,15 +387,22 @@ int main() {
           }
 
           break;
+
         case DataExchange:
-          Serial.println("Ready for input.");
+
+          Serial.println("Ready for input/output.");
+
+          // Begin communication (listen for input/output)
           while (true) {
-            clientLoop(consts);
+            communication(consts);
           }
           break;
+
         default:
+
           currentState = Start;
           break;
+
       }
     }
   }
