@@ -17,10 +17,11 @@
  * Calculates the modular multplication of 2 values without requiring more than
  * 32 bits at any point during computation.
  *
- * @param value1 the first number to multiply.
- * @param value2 the second number to multiply.
- * @param modulus the modulus of the operation.
- * @return the result of modular multiplication.
+ * @param[in] value1    First number to multiply.
+ * @param[in] value2    Second number to multiply.
+ * @param[in] modulus   Modulus of the operation.
+ *
+ * @return    answer    Result of modular multiplication.
  */
 uint32_t mulmod(uint32_t value1, uint32_t value2, uint32_t modulus) {
   uint32_t answer = 0;
@@ -57,7 +58,7 @@ uint32_t mulmod(uint32_t value1, uint32_t value2, uint32_t modulus) {
  * @param[in]   base        Base of exponentiation.
  * @param[in]   exponent    Exponent of exponentiation.
  * @param[in]   modulus     Modulus of the operation.
- * @return answer the result of fast expoenetiation.
+ * @return      answer      Result of fast expoenetiation.
  */
 uint32_t powmod(uint32_t base, uint32_t exponent, uint32_t modulus) {
   uint32_t answer = 1;
@@ -75,8 +76,9 @@ uint32_t powmod(uint32_t base, uint32_t exponent, uint32_t modulus) {
 
   return answer;
 }
+
 /**
- * Swap two ints
+ * Swap two uint32_t.
  *
  * @param[in, out]  a   First number
  * @param[in, out]  b   Second number
@@ -102,6 +104,14 @@ bool isPrime(uint16_t number) {
   return true;
 }
 
+/**
+ * Finds the greatest common divisor.
+ *
+ * @param[in] value1  The first number.
+ * @param[in] value2  The second number.
+ *
+ * @return            The calculated GCD.
+ */
 uint32_t gcd(uint32_t value1, uint32_t value2) {
   while (value2 > 0) {
     value1 = value1 % value2;
@@ -111,13 +121,21 @@ uint32_t gcd(uint32_t value1, uint32_t value2) {
   return value1;
 }
 
+/**
+ * Modulus but always positive.
+ *
+ * @param[in] x       The first number.
+ * @param[in] value2  The second number.
+ *
+ * @return            The calculated GCD.
+ */
 uint32_t reduce_mod(int32_t x, uint32_t totient) {
   if (x < 0) {
     auto z = (-x) / (totient + 1);
     return (x + (z * totient)) % totient;
-  } else {
-    return (x % totient);
   }
+  // else
+  return (x % totient);
 }
 
 /**
@@ -150,5 +168,6 @@ void extendedEuclideanAlgorithm(uint32_t& x, uint32_t e, uint32_t totient) {
     t[i + 1] = t[i - 1] - (q * t[i]);
     i++;
   }
+
   x = s[i - 1];
 }

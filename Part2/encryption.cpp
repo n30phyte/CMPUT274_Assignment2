@@ -20,7 +20,7 @@
  * @param[in] value1    First number to multiply.
  * @param[in] value2    Second number to multiply.
  * @param[in] modulus   Modulus of the operation.
- * 
+ *
  * @return    answer    Result of modular multiplication.
  */
 uint32_t mulmod(uint32_t value1, uint32_t value2, uint32_t modulus) {
@@ -168,6 +168,6 @@ void extendedEuclideanAlgorithm(uint32_t& x, uint32_t e, uint32_t totient) {
     t[i + 1] = t[i - 1] - (q * t[i]);
     i++;
   }
-  
+
   x = reduce_mod(s[i - 1], totient);
 }

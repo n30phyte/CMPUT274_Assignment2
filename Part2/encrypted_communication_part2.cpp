@@ -71,8 +71,9 @@ void sendUint32(uint32_t number) {
  * @return The decrypted character.
  */
 char receive(const ArduinoConstants& constants) {
+  auto number = receiveUint32();
   char decrypted =
-      powmod(receiveUint32(), constants.thisPrivateKey, constants.thisModulus);
+      powmod(number, constants.thisPrivateKey, constants.thisModulus);
 
   return decrypted;
 };
@@ -89,26 +90,20 @@ void send(char message, const ArduinoConstants& constants) {
 
 /**
  * Communication processing loop.
- * 
+ *
  * First check if receiving a message from the other arduino. If this is the
  * case, decrypt the message and print it.
- * 
- * Then, check for input from the user. If there is a message, the Arduino 
- * will send the message to the other Arduino once it has been encrypted 
+ *
+ * Then, check for input from the user. If there is a message, the Arduino
+ * will send the message to the other Arduino once it has been encrypted
  * in the 'send' function.
- * 
+ *
  * @param &properties: A reference to the "constants" of this Arduino.
  */
-void communication(const ArduinoConstants& constants) {   
-  // Check if receiving a message.
-  if (Serial3.available() > 0) {
-    Serial.print(receive(constants));
-  }
-
+void communication(const ArduinoConstants& constants) {
   // Check for user input.
   if (Serial.available() > 0) {
     char input = Serial.read();
-    Serial.flush();
 
     if (input == '\r') {
       send('\r', constants);
@@ -118,22 +113,25 @@ void communication(const ArduinoConstants& constants) {
       Serial.print(input);
       send(input, constants);
     }
+  }
 
-    Serial3.flush();
+  // Check if receiving a message.
+  if (Serial3.available() > 3) {
+    Serial.print(receive(constants));
   }
 }
 
 /**
- * Generates a random number that is at least as large as 2^minSize. 
- * 
- * The 'randomness' is a result of reading an unused arduino pin (in 
- * this case, the 1st pin is unused) using analogRead, which returns 
- * a random integer between 0 and 1023. We take the least significant 
- * bit as many times from this random number as needed to generate a 
+ * Generates a random number that is at least as large as 2^minSize.
+ *
+ * The 'randomness' is a result of reading an unused arduino pin (in
+ * this case, the 1st pin is unused) using analogRead, which returns
+ * a random integer between 0 and 1023. We take the least significant
+ * bit as many times from this random number as needed to generate a
  * number at least as large as 'minSize'.
- * 
+ *
  * @param minSize : the minimum size of the random number we want (2^minSize)
- * 
+ *
  * @return the random number generated.
  */
 uint16_t generateNumber(int minSize) {
@@ -150,13 +148,13 @@ uint16_t generateNumber(int minSize) {
 
 /**
  * Generates a random prime number that is at least as large as 2^minSize.
- * 
+ *
  * We generate a random number of at least minSize using generateNumber, then
  * increment it until it is a prime number. We also handle the case where the
  * number may overflow by wrapping around from 2^(k+1)-1 back to 2^k.
- * 
+ *
  * @param minSize : the minimum size of the prime number we want (2^minSize)
- * 
+ *
  * @return the random prime number generated.
  */
 uint16_t generatePrime(int minSize) {
@@ -178,15 +176,15 @@ uint16_t generatePrime(int minSize) {
 
 /**
  * Generates a random number that is coprime to 'totient' that is at least
- * as large as 2^minSize. 
- * 
- * We generate a random number of at least minSize using generateNumber, 
- * then increment it until it is coprime to 'totient' (number is coprime 
- * if gcd(number, totient) = 1). We also handle the case where the number 
+ * as large as 2^minSize.
+ *
+ * We generate a random number of at least minSize using generateNumber,
+ * then increment it until it is coprime to 'totient' (number is coprime
+ * if gcd(number, totient) = 1). We also handle the case where the number
  * may overflow by wrapping around from 2^(k+1)-1 back to 2^k.
- * 
+ *
  * @param minSize : the minimum size of the prime number we want (2^minSize)
- * 
+ *
  * @return the random coprime number generated.
  */
 uint16_t generateCoprime(int minSize, uint32_t totient) {
@@ -242,10 +240,10 @@ void setup() {
 
 /**
  * Main function of program.
- * 
+ *
  * First, generate the modulus, totient, private key, and public key.
  * Determines if the arduino running the code is the server or not.
- * 
+ *
  * Then, follow through with the procedure for the client and server
  * respectively according to the outline given in the assignment
  * description.
@@ -326,6 +324,7 @@ int main() {
             char response = Serial3.read();
             if (response == 'A') {
               currentState = DataExchange;
+
             } else if (response == 'C') {
               currentState = WaitForKey;
             }
@@ -333,24 +332,24 @@ int main() {
             sentKey = false;
             currentState = Start;
           }
+
+          Serial3.flush();
+
+          while (Serial3.available()) {
+            Serial3.read();
+          }
+
           break;
 
         case DataExchange:
-
-          Serial.println("Ready for input/output.");
-
           // Begin communication (listen for input/output)
-          while (true) {
-            communication(consts);
-          }
+          communication(consts);
           break;
 
         default:
-
           sentKey = false;
           currentState = Start;
           break;
-
       }
     }
   } else {
@@ -389,26 +388,36 @@ int main() {
             currentState = Start;
           }
 
+          Serial.flush();
+          Serial3.flush();
+
+          while (Serial3.available()) {
+            Serial3.read();
+          }
           break;
 
         case DataExchange:
-
-          Serial.println("Ready for input/output.");
-
           // Begin communication (listen for input/output)
-          while (true) {
-            communication(consts);
-          }
+          communication(consts);
           break;
 
         default:
 
           currentState = Start;
           break;
-
       }
     }
   }
 
   return 0;
 }
+
+/**
+ * CLient to server first:
+ * Client to server works
+ * server to client doesnt
+ *
+ * Server to client first:
+ *server to client doesnt
+ Client to server works
+ */

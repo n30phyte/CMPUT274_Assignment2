@@ -20,12 +20,11 @@ uint16_t generateCoprime(uint32_t totient) {
   return number;
 }
 int main() {
-  auto serverPublicKey = 11;
-  auto serverModulus = 95477;
-  auto serverPrivateKey = 27103;
-  auto serverTotient = 94860;
-  std::cout << "Server totient: " << 94860 << std::endl;
+  auto serverPublicKey = 1525;
+  auto serverModulus = 106459361;
+  auto serverPrivateKey = 52485661;
+  auto serverTotient = 106437012;
   uint32_t calculatedKey = 0;
-  extendedEuclideanAlgorithm(calculatedKey, serverPublicKey, 94860);
+  extendedEuclideanAlgorithm(calculatedKey, serverPublicKey, serverTotient);
   std::cout << calculatedKey << std::endl;
 }

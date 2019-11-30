@@ -1,38 +1,31 @@
 {
-    "configurations": [
-        {
-            "name": "Test",
-            "includePath": [],
-            "compilerPath": "/usr/bin/g++",
-            "intelliSenseMode": "gcc-x64",
-            "cppStandard": "c++11",
-            "compilerArgs": [
-                "-std=c++11",
-                "-Wall"
-            ]
-        },
-        {
-            "name": "Arduino",
-            "compilerPath": "/usr/bin/avr-g++",
-            "intelliSenseMode": "gcc-x86",
-            "cppStandard": "c++11",
-            "compilerArgs": [
-                "-std=gnu++11",
-                "-mmcu=atmega2560"
-            ],
-            "includePath": [
-                "/usr/share/arduino/hardware/arduino/avr/cores/arduino",
-                "/usr/share/arduino/hardware/arduino/avr/variants/mega",
-                "/usr/share/arduino/hardware/arduino/avr/libraries/SPI/src",
-                "/home/n30phyte/arduino-ua/libraries/Adafruit_GFX",
-                "/home/n30phyte/arduino-ua/libraries/MCUFRIEND_kbv",
-                "/home/n30phyte/arduino-ua/libraries/MCUFRIEND_kbv/utility",
-                "/home/n30phyte/arduino-ua/libraries/SD",
-                "/home/n30phyte/arduino-ua/libraries/SD/utility",
-                "/home/n30phyte/arduino-ua/libraries/TouchScreen"
-            ],
-            "compileCommands": "${workspaceFolder}/Part2/compile_commands.json"
-        }
-    ],
-    "version": 4
+  "configurations": [
+    {
+      "name": "Test",
+      "includePath": [],
+      "compilerPath": "/usr/bin/g++",
+      "intelliSenseMode": "gcc-x64",
+      "cppStandard": "c++11",
+      "compilerArgs": ["-std=c++11", "-Wall"]
+    },
+    {
+      "name": "Arduino",
+      "compilerPath": "/usr/bin/avr-g++",
+      "intelliSenseMode": "gcc-x86",
+      "cppStandard": "c++11",
+      "compilerArgs": ["-std=gnu++11", "-mmcu=atmega2560"],
+      "includePath": [
+        "/usr/share/arduino/hardware/arduino/avr/cores/arduino",
+        "/usr/share/arduino/hardware/arduino/avr/variants/mega",
+        "/usr/share/arduino/hardware/arduino/avr/libraries/SPI/src",
+        "/home/n30phyte/arduino-ua/libraries/Adafruit_GFX",
+        "/home/n30phyte/arduino-ua/libraries/MCUFRIEND_kbv",
+        "/home/n30phyte/arduino-ua/libraries/MCUFRIEND_kbv/utility",
+        "/home/n30phyte/arduino-ua/libraries/SD",
+        "/home/n30phyte/arduino-ua/libraries/SD/utility",
+        "/home/n30phyte/arduino-ua/libraries/TouchScreen"
+      ]
+    }
+  ],
+  "version": 4
 }
