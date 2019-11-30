@@ -124,6 +124,34 @@ void serverLoop(const ArduinoConstants& constants)
 }
 
 /**
+ * Communication processing loop.
+ */
+void communication(const ArduinoConstants& constants)
+{   
+    // Check if receiving a message.
+    if (Serial3.available() > 0) {
+        Serial.print(receive(constants));
+    }
+
+    // Check for user input.
+    if (Serial.available() > 0) {
+        char input = Serial.read();
+        Serial.flush();
+
+        if (input == '\r') {
+            send('\r', constants);
+            send('\n', constants);
+            Serial.println();
+        } else {
+            Serial.print(input);
+            send(input, constants);
+        }
+
+        Serial3.flush();
+    }
+}
+
+/**
  * Setup function.
  * 
  * Initializes Serial for communication to the computer
@@ -175,6 +203,11 @@ int main()
         while (true) {
             clientLoop(consts);
         }
+    }
+
+    // Begin communication loop.
+    while (true) {
+        communication(consts);
     }
 
     return 0;
