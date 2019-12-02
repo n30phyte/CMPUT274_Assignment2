@@ -238,6 +238,14 @@ void setup() {
   pinMode(ID_PIN, INPUT_PULLUP);
 }
 
+/**
+ * Generates keys using pass-by-reference.
+ * 
+ * First, generate p and q. Then, calculate the modulus and totient.
+ * Next, we generate the public and private keys.
+ * 
+ * @param &properties: A reference to the "constants" of this Arduino.
+ */
 void generateKeys(ArduinoConstants& constants) {
   uint16_t p = generatePrime(14);
   // typed to force a promotion on multiplication
