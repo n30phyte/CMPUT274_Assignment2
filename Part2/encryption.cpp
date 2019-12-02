@@ -105,7 +105,7 @@ bool isPrime(uint16_t number) {
 }
 
 /**
- * Finds the greatest common divisor.
+ * Calculate the greatest common divisor.
  *
  * @param[in] value1  The first number.
  * @param[in] value2  The second number.
@@ -131,7 +131,8 @@ uint32_t gcd(uint32_t value1, uint32_t value2) {
  */
 int32_t reduce_mod(int32_t x, uint32_t m) {
   if (x < 0) {
-    x += ((-x / m) + 1) * m;
+    int32_t z = (-x / m) + 1;
+    x += z * m;
   }
   return x % m;
 }

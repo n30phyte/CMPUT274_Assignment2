@@ -67,7 +67,8 @@ void sendUint32(uint32_t number) {
  * The provided uint32_from_serial3() function did not seem to work, and this
  * was our solution.
  *
- * @param &properties: A reference to the "constants" of this Arduino
+ * @param constants: A reference to the "constants" of this Arduino
+ *
  * @return The decrypted character.
  */
 char receive(const ArduinoConstants& constants) {
@@ -82,7 +83,7 @@ char receive(const ArduinoConstants& constants) {
  * Encrypts a message, then sends it as four bytes to the other Arduino.
  *
  * @param message: the message to be encrypted and sent to the other Arduino
- * @param &properties: A reference to the "constants" of this Arduino.
+ * @param constants: A reference to the "constants" of this Arduino.
  */
 void send(char message, const ArduinoConstants& constants) {
   sendUint32(powmod(message, constants.otherPublicKey, constants.otherModulus));
@@ -98,7 +99,7 @@ void send(char message, const ArduinoConstants& constants) {
  * will send the message to the other Arduino once it has been encrypted
  * in the 'send' function.
  *
- * @param &properties: A reference to the "constants" of this Arduino.
+ * @param constants: A reference to the "constants" of this Arduino.
  */
 void communication(const ArduinoConstants& constants) {
   // Check for user input.
@@ -130,7 +131,7 @@ void communication(const ArduinoConstants& constants) {
  * bit as many times from this random number as needed to generate a
  * number at least as large as 'minSize'.
  *
- * @param minSize : the minimum size of the random number we want (2^minSize)
+ * @param minSize: the minimum size of the random number we want (2^minSize)
  *
  * @return the random number generated.
  */
@@ -153,7 +154,7 @@ uint16_t generateNumber(int minSize) {
  * increment it until it is a prime number. We also handle the case where the
  * number may overflow by wrapping around from 2^(k+1)-1 back to 2^k.
  *
- * @param minSize : the minimum size of the prime number we want (2^minSize)
+ * @param minSize: the minimum size of the prime number we want (2^minSize)
  *
  * @return the random prime number generated.
  */
@@ -183,7 +184,8 @@ uint16_t generatePrime(int minSize) {
  * if gcd(number, totient) = 1). We also handle the case where the number
  * may overflow by wrapping around from 2^(k+1)-1 back to 2^k.
  *
- * @param minSize : the minimum size of the prime number we want (2^minSize)
+ * @param minSize: the minimum size of the prime number we want (2^minSize)
+ * @param totient: the totient target.
  *
  * @return the random coprime number generated.
  */
@@ -207,8 +209,8 @@ uint16_t generateCoprime(int minSize, uint32_t totient) {
 /**
  * Waits for a certain number of bytes on Serial3 or timeout.
  *
- * @param nbytes : the number of bytes we want
- * @param timeout : timeout period (ms); specifying a negative number
+ * @param nbytes: the number of bytes we want
+ * @param timeout: timeout period (ms); specifying a negative number
  * turns off timeouts (the function waits indefinitely
  * if timeouts are turned off).
  *
@@ -240,11 +242,11 @@ void setup() {
 
 /**
  * Generates keys using pass-by-reference.
- * 
+ *
  * First, generate p and q. Then, calculate the modulus and totient.
  * Next, we generate the public and private keys.
- * 
- * @param &properties: A reference to the "constants" of this Arduino.
+ *
+ * @param constants: A reference to the "constants" of this Arduino.
  */
 void generateKeys(ArduinoConstants& constants) {
   uint16_t p = generatePrime(14);
@@ -356,7 +358,6 @@ int main() {
     // CLIENT CODE //
     Serial.println("This is client.");
 
-    // Variable reused for different time operations.
     bool exchangeSucceed = false;
 
     while (true) {
