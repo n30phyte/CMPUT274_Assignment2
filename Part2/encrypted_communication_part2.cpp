@@ -299,7 +299,7 @@ int main() {
             consts.otherPublicKey = receiveUint32();
             consts.otherModulus = receiveUint32();
             if (!sentKey) {
-              Serial3.write("A");
+              Serial3.write('A');
               sendUint32(consts.thisPublicKey);
               sendUint32(consts.thisModulus);
               currentState = WaitForAck;
@@ -355,7 +355,7 @@ int main() {
       switch (currentState) {
         case Start:
 
-          Serial3.write("C");
+          Serial3.write('C');
           sendUint32(consts.thisPublicKey);
           sendUint32(consts.thisModulus);
           currentState = WaitForAck;
@@ -368,8 +368,10 @@ int main() {
               // Ack
               consts.otherPublicKey = receiveUint32();
               consts.otherModulus = receiveUint32();
-              Serial3.write("A");
+              Serial3.write('A');
               exchangeSucceed = true;
+            } else {
+              currentState = Start;
             }
           }
 
@@ -393,7 +395,6 @@ int main() {
           break;
 
         default:
-
           currentState = Start;
           break;
       }
